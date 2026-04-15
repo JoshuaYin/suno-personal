@@ -3,37 +3,19 @@ import type {
   MVSubmitBody,
   SubmitResponse,
   TaskStatusResponse,
+  HistoryResponse,
 } from "@/types";
+import { authFetch } from "./auth";
 
 const API_BASE = "/api";
-
-/** 获取已保存的 API Key */
-export function getApiKey(): string {
-  return localStorage.getItem("suno_api_key") ?? "";
-}
-
-/** 保存 API Key */
-export function setApiKey(key: string): void {
-  localStorage.setItem("suno_api_key", key);
-}
-
-
-function authHeaders(): HeadersInit {
-  const key = getApiKey();
-  return {
-    Authorization: key.startsWith("Bearer ") ? key : `Bearer ${key}`,
-    "Content-Type": "application/json",
-  };
-}
 
 // ============================================
 // 异步提交任务
 // ============================================
 
 export async function submitTask(body: SubmitBody | MVSubmitBody): Promise<SubmitResponse> {
-  const res = await fetch(`${API_BASE}/v1/tasks/submit`, {
+  const res = await authFetch(`${API_BASE}/v1/tasks/submit`, {
     method: "POST",
-    headers: authHeaders(),
     body: JSON.stringify(body),
   });
 
@@ -52,10 +34,7 @@ export async function submitTask(body: SubmitBody | MVSubmitBody): Promise<Submi
 export async function getTaskStatus(
   taskId: string,
 ): Promise<TaskStatusResponse> {
-  const res = await fetch(`${API_BASE}/v1/tasks/status?task_id=${taskId}`, {
-    method: "GET",
-    headers: authHeaders(),
-  });
+  const res = await authFetch(`${API_BASE}/v1/tasks/status?task_id=${taskId}`);
 
   if (!res.ok) {
     const text = await res.text();
@@ -63,6 +42,16 @@ export async function getTaskStatus(
   }
 
   return res.json() as Promise<TaskStatusResponse>;
+}
+
+// ============================================
+// 获取历史记录
+// ============================================
+
+export async function getHistory(): Promise<HistoryResponse> {
+  const res = await authFetch(`${API_BASE}/v1/history`);
+  if (!res.ok) throw new Error(`获取历史记录失败 (${res.status})`);
+  return res.json();
 }
 
 // ============================================
@@ -91,8 +80,6 @@ export async function pollTaskUntilDone(
       );
     }
 
-    // Running 状态不计超时，持续等待
-    // 仅 Pending 状态累计超时计数
     if (result.output.task_status === "Pending") {
       pendingCount++;
       if (pendingCount >= maxPendingAttempts) {
