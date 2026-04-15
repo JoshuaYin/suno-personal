@@ -15,3 +15,5 @@ export const jwtConfig = {
 };
 
 export const encryptKey = process.env.ENCRYPT_KEY || "";
+
+export const apiBase = process.env.API_BASE || "https://api.modelverse.cn";

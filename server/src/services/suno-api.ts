@@ -1,4 +1,6 @@
-const MODELVERSE_BASE = "https://api.modelverse.cn";
+import { apiBase } from "../config.js";
+
+const API_BASE = apiBase;
 
 interface SubmitResult {
   status: number;
@@ -12,7 +14,7 @@ export async function submitTask(
   requestBody: unknown,
   authorization: string,
 ): Promise<SubmitResult> {
-  const res = await fetch(`${MODELVERSE_BASE}/v1/tasks/submit`, {
+  const res = await fetch(`${API_BASE}/v1/tasks/submit`, {
     method: "POST",
     headers: {
       Authorization: authorization,
@@ -33,7 +35,7 @@ export async function queryTaskStatus(
   authorization: string,
 ): Promise<SubmitResult> {
   const res = await fetch(
-    `${MODELVERSE_BASE}/v1/tasks/status?task_id=${taskId}`,
+    `${API_BASE}/v1/tasks/status?task_id=${taskId}`,
     {
       method: "GET",
       headers: {
