@@ -3,7 +3,12 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ensureDataDirs } from "./services/task-store.js";
+import { testConnection } from "./services/db.js";
+import { initTables } from "./services/init-db.js";
+import authRoutes from "./routes/auth.js";
 import sunoRoutes from "./routes/suno.js";
+import configRoutes from "./routes/config.js";
+import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,16 +32,21 @@ app.use(
 );
 app.use(express.json());
 
-// API 路由（优先）
-app.use("/api", sunoRoutes);
+// API 路由
+app.use("/api", authRoutes);              // /api/auth/*       无需鉴权
+app.use("/api", requireAuth, configRoutes); // /api/v1/config/*  需要登录
+app.use("/api", requireAuth, sunoRoutes);   // /api/v1/*         需要登录
 
 // 健康检查
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// ---- 音乐文件静态服务 ----
-app.use("/music", express.static("/data/suno/music"));
+// ---- 音乐文件静态服务（按用户隔离: /music/:username/file.mp3）----
+app.use("/music/:username", (req, res, next) => {
+  const username = req.params.username;
+  express.static(`/data/suno/${username}/music`)(req, res, next);
+});
 
 // ---- 生产模式：serve 前端静态文件 ----
 // 前端 build 产物在项目根目录的 dist/（即 server/../dist）
@@ -53,6 +63,8 @@ app.get("/{*path}", (_req, res) => {
 // 启动
 async function main() {
   await ensureDataDirs();
+  await testConnection();
+  await initTables();
   app.listen(PORT, () => {
     console.log(`🚀 Suno Personal Server 启动: http://localhost:${PORT}`);
     console.log(`   前端静态文件: ${frontendDist}`);

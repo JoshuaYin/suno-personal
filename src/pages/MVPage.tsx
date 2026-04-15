@@ -7,7 +7,6 @@ import type {
   MVTaskRecord,
 } from "@/types";
 import {
-  getApiKey,
   submitTask,
   pollTaskUntilDone,
 } from "@/services/api";
@@ -69,13 +68,6 @@ export default function MVPage() {
   );
 
   async function handleGenerate() {
-    // 校验 API Key
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError("请先在左侧「API 设置」中配置你的 API Key");
-      return;
-    }
-
     // 解析图片 URL 列表
     const images = imageUrls
       .split("\n")

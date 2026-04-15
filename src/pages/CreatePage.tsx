@@ -9,7 +9,6 @@ import type {
   TaskRecord,
 } from "@/types";
 import {
-  getApiKey,
   submitTask,
   pollTaskUntilDone,
 } from "@/services/api";
@@ -83,13 +82,6 @@ export default function CreatePage() {
   }
 
   async function handleGenerate() {
-    // 校验 API Key
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError("请先在左侧「API 设置」中配置你的 API Key");
-      return;
-    }
-
     // 校验输入
     if (mode === "inspiration" && !inspDesc.trim()) {
       setError("请输入音乐描述");

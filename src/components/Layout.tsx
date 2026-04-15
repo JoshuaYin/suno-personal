@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import SettingsPanel from "./SettingsPanel";
+import { clearTokens } from "@/services/auth";
 
 const navItems = [
   { to: "/create", label: "创作", icon: "🎵" },
-  { to: "/mv", label: "生成 MV", icon: "🎬" },
+  // { to: "/mv", label: "生成 MV", icon: "🎬" },  // TODO: 暂时隐藏
   { to: "/history", label: "历史", icon: "📋" },
 ];
 
@@ -45,13 +46,23 @@ export default function Layout() {
         </nav>
 
         {/* Footer */}
-        <div className="px-3 pb-4">
+        <div className="px-3 pb-2 space-y-1">
           <button
             onClick={() => setSettingsOpen(true)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-surface-lighter transition-colors"
           >
             <span className="text-lg">⚙️</span>
             API 设置
+          </button>
+          <button
+            onClick={() => {
+              clearTokens();
+              window.location.reload();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-red-400 hover:bg-surface-lighter transition-colors"
+          >
+            <span className="text-lg">🚪</span>
+            退出登录
           </button>
         </div>
         <div className="px-5 py-4 border-t border-border">
